@@ -1,0 +1,82 @@
+package com.lwm.project.tool.toolCategory.controller;
+
+import com.lwm.framework.aspectj.lang.annotation.Log;
+import com.lwm.framework.aspectj.lang.enums.BusinessType;
+import com.lwm.framework.web.controller.BaseController;
+import com.lwm.framework.web.domain.AjaxResult;
+import com.lwm.framework.web.page.TableDataInfo;
+import com.lwm.project.tool.toolCategory.domain.ToolCategory;
+import com.lwm.project.tool.toolCategory.service.ToolCategoryService;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * @Auther: guya
+ * @Date: 2020/3/21 22:51
+ * @Description: 工具的分类(ToolCategory) Controller层
+ */
+@RestController
+@RequestMapping("/tool/toolCategory")
+public class ToolCategoryController extends BaseController {
+    @Autowired
+    ToolCategoryService toolCategoryService;
+
+    @RequiresPermissions("tool:toolCategory:view")
+    @GetMapping()
+    public String toolCategory() {
+        return "tool/toolCategory/tool";
+    }
+
+
+    @GetMapping("/list")
+    @RequiresPermissions("blog:toolCategory:list")
+    @ResponseBody
+    public TableDataInfo list(ToolCategory toolCategory) {
+        startPage();
+        List<ToolCategory> list = toolCategoryService.selectToolCategoryList(toolCategory);
+        return getDataTable(list);
+    }
+
+    @GetMapping("/add")
+    public String add() {
+        return "tool/toolCategory/add";
+    }
+
+
+    @Log(title = "工具分类管理", businessType = BusinessType.INSERT)
+    @RequiresPermissions("tool:toolCategory:add")
+    @PostMapping("/add")
+    @ResponseBody
+    public AjaxResult addSave(ToolCategory toolCategory) {
+        return toAjax(toolCategoryService.insertToolCategory(toolCategory));
+    }
+
+    @GetMapping("/edit/{toolCategoryId}")
+    public String edit(@PathVariable Integer toolCategoryId, Model model) {
+        model.addAttribute("toolCategory", toolCategoryService.selectToolCategoryById(toolCategoryId));
+        return "tool/toolCategory/edit";
+    }
+
+    @PutMapping("/edit")
+    @RequiresPermissions("tool:toolCategory:edit")
+    @Log(title = "工具分类管理", businessType = BusinessType.UPDATE)
+    @ResponseBody
+    public AjaxResult editSave(ToolCategory toolCategory) {
+        return toAjax(toolCategoryService.updateToolCategory(toolCategory));
+    }
+
+
+    @DeleteMapping("/remove")
+    @Log(title = "工具分类管理", businessType = BusinessType.DELETE)
+    @RequiresPermissions("blog:toolCategory:remove")
+    @ResponseBody
+    public AjaxResult remove(Integer[] ids) {
+        return toAjax(toolCategoryService.deleteToolCategoryByIds(ids));
+    }
+
+
+}
